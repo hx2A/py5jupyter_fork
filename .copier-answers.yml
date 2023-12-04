@@ -1,0 +1,14 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.2.4
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: jim@ixora.io
+author_name: Jim Schmitz
+has_binder: false
+has_settings: false
+kind: frontend
+labextension_name: jupyter-py5
+project_short_description: py5 Jupyter tools
+python_name: py5jupyter
+repository: https://github.com/py5coding/py5jupyter
+test: true
+

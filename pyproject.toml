@@ -1,106 +1,77 @@
 [build-system]
-requires = [
-    "hatchling",
-    "jupyterlab==3.*",
-]
+requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2"]
 build-backend = "hatchling.build"
 
 [project]
 name = "py5jupyter"
-description = "Jupyter tools for py5"
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.8"
-authors = [
-    { name = "Jim Schmitz", email = "jim@ixora.io" },
-]
-keywords = [
-    "IPython",
-    "Jupyter",
-    "Processing",
-    "Widgets",
-]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Education",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
-    "Programming Language :: Java",
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Framework :: Jupyter :: JupyterLab :: 4",
+    "Framework :: Jupyter :: JupyterLab :: Extensions",
+    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Topic :: Artistic Software",
-    "Topic :: Multimedia :: Graphics",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "ipykernel>=6.19",
-    "ipython>=8.7",
-    "ipywidgets>=7.7",
-    "jupyter>=1.0",
-    "py5>=0.9.0a0",
-    "traitlets>=5.0",
 ]
-version = "0.2.0a0"
+dynamic = ["version", "description", "authors", "urls", "keywords"]
 
-[project.license]
-file = "LICENSE"
+[tool.hatch.version]
+source = "nodejs"
 
-[project.optional-dependencies]
-docs = [
-    "jupyter_sphinx",
-    "nbsphinx",
-    "nbsphinx-link",
-    "pypandoc",
-    "pytest_check_links",
-    "recommonmark",
-    "sphinx>=1.5",
-    "sphinx_rtd_theme",
-]
-examples = []
-test = [
-    "nbval",
-    "pytest-cov",
-    "pytest>=4.6",
-]
-
-[project.urls]
-"Bug Tracker" = "https://github.com/py5coding/py5jupyter/issues"
-Documentation = "https://py5coding.org/"
-Download = "https://pypi.org/project/py5jupyter"
-Homepage = "https://py5coding.org/"
-"Source Code" = "https://github.com/py5coding/py5jupyter"
-
-[tool.hatch.build]
-artifacts = [
-    "py5jupyter/nbextension/index.*",
-    "py5jupyter/labextension/*.tgz",
-    "py5jupyter/labextension",
-]
-
-[tool.hatch.build.targets.wheel.shared-data]
-"py5jupyter/nbextension" = "share/jupyter/nbextensions/py5jupyter"
-"py5jupyter/labextension" = "share/jupyter/labextensions/jupyter-py5"
-"./install.json" = "share/jupyter/labextensions/jupyter-py5/install.json"
-"./py5jupyter.json" = "etc/jupyter/nbconfig/notebook.d/py5jupyter.json"
+[tool.hatch.metadata.hooks.nodejs]
+fields = ["description", "authors", "urls"]
 
 [tool.hatch.build.targets.sdist]
-exclude = [
-    ".github",
-]
+artifacts = ["py5jupyter/labextension"]
+exclude = [".github", "binder"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"py5jupyter/labextension" = "share/jupyter/labextensions/jupyter-py5"
+"install.json" = "share/jupyter/labextensions/jupyter-py5/install.json"
+
+[tool.hatch.build.hooks.version]
+path = "py5jupyter/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
-ensured-targets = [
-    "py5jupyter/nbextension/index.js",
-    "py5jupyter/labextension/package.json",
-]
-skip-if-exists = [
-    "py5jupyter/nbextension/index.js",
-    "py5jupyter/labextension/package.json",
-]
-dependencies = [
-    "hatch-jupyter-builder>=0.8.2",
-]
+dependencies = ["hatch-jupyter-builder>=0.5"]
 build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+    "py5jupyter/labextension/static/style.js",
+    "py5jupyter/labextension/package.json",
+]
+skip-if-exists = ["py5jupyter/labextension/static/style.js"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
-path = "."
 build_cmd = "build:prod"
+npm = ["jlpm"]
+
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+build_cmd = "install:extension"
+npm = ["jlpm"]
+source_dir = "src"
+build_dir = "py5jupyter/labextension"
+
+[tool.jupyter-releaser.options]
+version_cmd = "hatch version"
+
+[tool.jupyter-releaser.hooks]
+before-build-npm = [
+    "python -m pip install 'jupyterlab>=4.0.0,<5'",
+    "jlpm",
+    "jlpm build:prod"
+]
+before-build-python = ["jlpm clean:all"]
+
+[tool.check-wheel-contents]
+ignore = ["W002"]
